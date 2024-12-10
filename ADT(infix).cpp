@@ -5,172 +5,303 @@
 #include<algorithm>
 
 using namespace std;
-
-// Stack for operators and characters
-struct stack1 {
+struct stack1{
     char data;
-    stack1* next;
-} *top = NULL;
+    stack1 *next;
+       
+}*top=NULL;
+struct stack2{
+    int data ;
+    stack2 *next ;
+    
+}*top1=NULL;
 
-// Stack for integer operands
-struct stack2 {
-    int data;
-    stack2* next;
-} *top1 = NULL;
-
-// Utility functions for stack1
-void push1(char data) {
-    stack1* newnode = new stack1;
-    newnode->data = data;
-    newnode->next = top;
-    top = newnode;
-}
-
-char pop1() {
-    if (top == NULL) return '\0';
-    char data = top->data;
-    stack1* temp = top;
-    top = top->next;
-    delete temp;
-    return data;
-}
-
-// Utility functions for stack2
-void push2(int data) {
-    stack2* newnode = new stack2;
-    newnode->data = data;
-    newnode->next = top1;
-    top1 = newnode;
-}
-
-int pop2() {
-    if (top1 == NULL) return 0;
-    int data = top1->data;
-    stack2* temp = top1;
-    top1 = top1->next;
-    delete temp;
-    return data;
-}
-
-int precedence(char op) {
-    if (op == '^') return 3;
-    if (op == '*' || op == '/') return 2;
-    if (op == '+' || op == '-') return 1;
-    return 0;
-}
-
-// Convert infix to postfix
-void infixToPostfix(char infix[30]) {
-    string postfix;
-    push1('(');
-    int l = strlen(infix);
-    infix[l] = ')';
-    int i = 0;
-
-    while (top != NULL) {
-        char ch = infix[i++];
-        if (ch == '(') push1(ch);
-        else if (isalnum(ch)) postfix += ch;
-        else if (ch == ')') {
-            while (top->data != '(') postfix += pop1();
-            pop1();
-        } else {
-            while (precedence(top->data) >= precedence(ch)) postfix += pop1();
-            push1(ch);
-        }
+int precedance(char op){
+    if(op=='^')
+    {
+       return 3;
     }
-    cout << "\nPostfix Expression is: " << postfix;
-}
-
-// Convert infix to prefix
-void infixToPrefix(char infix[30]) {
-    string prefix;
-    reverse(infix, infix + strlen(infix));
-    for (int i = 0; i < strlen(infix); ++i)
-        if (infix[i] == '(') infix[i] = ')';
-        else if (infix[i] == ')') infix[i] = '(';
-
-    infixToPostfix(infix);
-    while (top != NULL) prefix += pop1();
-    reverse(prefix.begin(), prefix.end());
-    cout << "\nPrefix Expression is: " << prefix;
-}
-
-// Evaluate postfix expression
-void evalPostfix(char postfix[30]) {
-    int i = 0;
-    while (postfix[i]) {
-        char ch = postfix[i++];
-        if (isdigit(ch)) push2(ch - '0');
-        else {
-            int a = pop2(), b = pop2();
-            switch (ch) {
-                case '+': push2(b + a); break;
-                case '-': push2(b - a); break;
-                case '*': push2(b * a); break;
-                case '/': push2(b / a); break;
-            }
-        }
+    else if(op=='*'||op=='/')
+    {
+       return 2;
     }
-    cout << "\nValue of postfix expression is: " << pop2();
-}
-
-// Evaluate prefix expression
-void evalPrefix(char prefix[30]) {
-    reverse(prefix, prefix + strlen(prefix));
-    int i = 0;
-    while (prefix[i]) {
-        char ch = prefix[i++];
-        if (isdigit(ch)) push2(ch - '0');
-        else {
-            int a = pop2(), b = pop2();
-            switch (ch) {
-                case '+': push2(a + b); break;
-                case '-': push2(a - b); break;
-                case '*': push2(a * b); break;
-                case '/': push2(a / b); break;
-            }
-        }
+    else if(op=='+'||op=='-')
+    {
+       return 1;
     }
-    cout << "\nValue of prefix expression is: " << pop2();
+    else
+    {
+       return 0;
+    } 
 }
 
-int main() {
-    char expr[30];
-    int choice;
+void infixtopost(char infix[30])
+{
+     stack1 *newnode,*temp;
+     string p;
+     int i=0,l;
+     newnode=new stack1;
+     newnode -> data = '(';
+     newnode -> next = top;
+     top = newnode;
+     
+     l = strlen(infix);
+     
+     infix[l]=')';
+     
+     while(top!= NULL)
+     {
+     	if(infix[i]=='(')
+     	{
+     		newnode = new stack1;
+     		newnode -> data = '(';
+     		newnode -> next = top;
+     		top = newnode;
+     	}
+     	else if(infix[i]=='*'|| infix[i]=='-'||infix[i]=='+'||infix[i]=='/'||infix[i]=='^')
+     	{
+     		while(precedance(top->data)>=precedance(infix[i]))
+     		{
+     			p+=top->data;
+     			temp=top;
+     			top=top->next;
+     			delete temp;
+     			
+     		}
+     			newnode = new stack1;
+     			newnode -> data=infix[i];
+     			newnode -> next=top;
+     			top=newnode;
+     	}
+     	else if(infix[i]==')')
+     	{
+     		while(top->data!='(')
+     		{
+     			p+=top->data;
+     			temp=top;
+     			top=top->next;
+     			delete temp;
+     			
+     		}
+     			temp=top;
+     		        top=top->next;
+     		        delete temp;
+     	}
+     	else
+     	{
+     		p+=infix[i];
+     	}
+     	i++;
+     }
+     cout<<"\n Postfix Expression is: "<<p;
+    
+}
 
-    do {
-        cout << "\n1. Infix to Postfix"
-             << "\n2. Infix to Prefix"
-             << "\n3. Evaluate Postfix"
-             << "\n4. Evaluate Prefix"
-             << "\n5. Exit"
-             << "\nEnter your choice: ";
-        cin >> choice;
+void infixtopre(char infix[50])
+{
+	stack1 *newnode, *temp;
+	string p;
+	int i,l;
+	i=strlen(infix)-1;
+	
+	newnode=new stack1;
+	newnode -> data=')';
+	newnode ->next=top;
+	top=newnode;
+	
+	infix[-1]='(';
+	while(top!=NULL)
+	{
+		if(infix[i]==')')
+		{
+			newnode=new stack1;
+			newnode->data=')';
+			newnode->next=top;
+			top=newnode;
+			
+		}
+		else if(infix[i]=='*'|| infix[i]=='-'||infix[i]=='+'||infix[i]=='/'||infix[i]=='^')
+		{
+			while(precedance(top->data)>=precedance(infix[i]))
+			{
+				p+=top->data;
+     				temp=top;
+     				top=top->next;
+     				delete temp;
+			}
+				newnode = new stack1;
+     				newnode -> data=infix[i];
+     				newnode -> next=top;
+     				top=newnode;	
+		}
+		else if(infix[i]=='(')
+     	        {
+     		while(top->data!=')')
+     		{
+     			p+=top->data;
+     			temp=top;
+     			top=top->next;
+     			delete temp;
+     			
+     		}
+     			temp=top;
+     		        top=top->next;
+     		        delete temp;
+     		}
+     	        else
+     	        {
+     			p+=infix[i];
+     		}
+     		i--;
+     	}
+     	cout << "\n Prefix expression is : ";
+     	reverse(p.begin(),p.end());
+     	cout << p;	
+}
 
-        switch (choice) {
-            case 1:
-                cout << "\nEnter infix expression: ";
-                cin >> expr;
-                infixToPostfix(expr);
-                break;
-            case 2:
-                cout << "\nEnter infix expression: ";
-                cin >> expr;
-                infixToPrefix(expr);
-                break;
-            case 3:
-                cout << "\nEnter postfix expression: ";
-                cin >> expr;
-                evalPostfix(expr);
-                break;
-            case 4:
-                cout << "\nEnter prefix expression: ";
-                cin >> expr;
-                evalPrefix(expr);
-                break;
-        }
-    } while (choice != 5);
 
-    return 0;
+void evalpost(char p[30])
+{
+	stack2 *newnode, *temp;
+	int i=0,a,b,c;
+	int l=strlen(p);
+	p[l]=')';
+	while(p[i]!=')')
+	{
+		if(isdigit(p[i]))
+		{
+			newnode=new stack2;
+			newnode->data=p[i]-'0';
+			newnode->next=top1;
+			top1=newnode;
+		}
+		else
+		{
+			a=top1->data;
+			temp=top1;
+			top1=top1->next;
+			delete temp;
+			
+			b=top1->data;
+			temp=top1;
+			top1=top1->next;
+			delete temp;
+			
+			switch(p[i])
+			{
+				case '+':
+					c=b+a;
+					break;
+				case '-':
+					c=b-a;
+					break;
+				case '*':
+					c=b*a;
+					break;
+				case '/':
+					c=b/a;
+					break;
+				
+			}
+			newnode=new stack2;
+			newnode->data=c;
+			newnode->next=top1;
+			top1=newnode;
+		}
+		i++;
+	}
+	cout << "\n value of postfix expression is: " <<top1->data;
+}
+
+
+void evalpre(char p[30])
+{
+	stack2 *newnode, *temp;
+	int i=strlen(p)-1,a,b,c;
+	
+	p[-1]='(';
+	
+	while(p[i]!='(')
+	{
+		if(isdigit(p[i]))
+		{
+			newnode=new stack2;
+			newnode->data=p[i]-'0';
+			newnode->next=top1;
+			top1=newnode;
+		}
+		else
+		{
+			a=top1->data;
+			temp=top1;
+			top1=top1->next;
+			delete temp;
+			
+			b=top1->data;
+			temp=top1;
+			top1=top1->next;
+			delete temp;
+			
+			switch(p[i])
+			{
+				case '+':
+					c=a+b;
+					break;
+				case '-':
+					c=a-b;
+					break;
+				case '*':
+					c=a*b;
+					break;
+				case '/':
+					c=a/b;
+					break;
+				
+			}
+			newnode=new stack2;
+			newnode->data=c;
+			newnode->next=top1;
+			top1=newnode;
+			
+		}
+		i--;
+	}
+	cout << "\n value of prefix expression is: "<<top1->data;
+}
+
+int main()
+{
+	char infix[30],p[30];
+	int ch;
+	do
+	{
+		cout << "\n1. Infix to postfix ";
+		cout << "\n2. Infix to prefix ";
+		cout << "\n3. Evaluation of postfix ";
+		cout << "\n4. Evaluation of prefix ";
+		cout << "\n5. Exit";
+		cout << "\nEnter your choice: ";
+		cin>>ch;
+		switch(ch)
+		{
+			case 1: cout << "\nEnter infix expression: ";
+			     cin>>infix;
+			     infixtopost(infix);
+			     break;
+			case 2: cout << "\nEnter infix expression: ";
+			     cin>>infix;
+			     infixtopre(infix);
+			     break;
+			case 3: cout << "\nEnter postfix expression: ";
+			     cin>>p;
+			     evalpost(p);
+			     break;
+			case 4: cout << "\nEnter prefix expression: ";
+			     cin>>p;
+			     evalpre(p);
+			     break;
+		}
+		
+	}while(ch!=5);
+	return 0;
 }
